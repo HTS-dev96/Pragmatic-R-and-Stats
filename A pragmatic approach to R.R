@@ -16,51 +16,19 @@
 # your code press control + enter. Or highlight your code and click "Run" at 
 # the top of this window
 
-# When you run functions you usually want to save that results
-# To start, let's load some practice data
+# You also need to set your directory which is where R will save your files
+# and where it will load files 
 
-data("iris")
-#Now click on <Promise> in the enviroment window
-#Now you have an object called iris with data inside
+setwd("C:/Users/jacka/Documents/Research/new_research")
+set.seed(12)
 
-#Let's look at our dataset
-View(iris)
-  # It has categorical and continuous variables
+#In your file explorer you can look to see what your file path is and paaste it in above
 
-#Let's rename this dataset
-data <- iris
-  # The left pointing arrow means I want to save the results of the function
-  # on the right as an object with the name on the left. 
-  # This will overwrite objects with a similar name so be careful
+# To load your data you can either click on the open folder in the enviroment corner
+# Or save your excel file as a csv file and use the code below
+# The csv file will need to be saved in the same folder as your directory 
 
-#Now we have the same data under a new name but it shows you how to use the 
-# most common part of code in R
-
-# Selecting specific colomns or rows in R
-  #For some stats functions you need to compare one column in your dataset to 
-  # another or specific columns from two datasets
-
-#Lets call the Sepal.Length column
-#Method 1: dollar sign
-
-data$Sepal.Length
-
-#Method 2: column mumber
-
-data[,1]
-  #It doesn't come out as nice
-  #In this formant [rows, columns] and if you leave it blank then it will include
-  # all rows/columns
-
-# Common issues with data type can be a column you think is saved as numeric
-# is accidentally saved as a character (maybe there was a period there)
-# You can check with the function str
-
-str(data)
-
-# We're lucky here that all variables are coded correctly 
-# The factor is also correctly coded with the three levels and nice labels
-# Later in this we'll code our own factor 
+data <- read.csv('file_name.csv')
 
 #R Packages: what makes R special helps you do additional functions
 
@@ -71,7 +39,7 @@ install.packages("gtsummary")
 
 #Then activate it using
 library(gtsummary)
-  #If you quit R then you need to do this each time
+#If you quit R then you need to do this each time
 
 # Now lets install all the packages you'll typically need
 
@@ -88,6 +56,56 @@ library(survminer)
 library(tidyverse)
 library(ggplot2)
 library(stats)
+
+# When you run functions you usually want to save that results
+# To start, let's load some practice data
+
+data("iris")
+#Now click on <Promise> in the enviroment window
+#Now you have an object called iris with data inside
+
+#Let's look at our dataset
+View(iris)
+  # It has categorical and continuous variables
+
+#Let's rename this dataset
+data <- iris
+  # The left pointing arrow means I want to save the results of the function
+  # on the right as an object with the name on the left. 
+  # This will overwrite objects with the same name so be careful
+
+#Now we have the same data under a new name but it shows you how to use the 
+# most common part of code in R
+
+# Selecting specific columns or rows in R
+  #For some stats functions you need to compare one column in your dataset to 
+  # another or specific columns from two datasets
+
+#Lets call the Sepal.Length column
+#Method 1: dollar sign
+
+data$Sepal.Length
+
+#Method 2: column number
+
+data[,1]
+  #It doesn't come out as nice
+  #In this format [rows, columns] and if you leave it blank then it will include
+  # all rows/columns
+
+# Common issues with data type can be a column you think is saved as numeric
+# is accidentally saved as a character (maybe there was a period there)
+# You can check with the function str
+
+str(data)
+
+# We're lucky here that all variables are coded correctly 
+# The factor is also correctly coded with the three levels and nice labels
+# Later in this we'll code our own factor 
+
+# To resave a column as numeric use the code below
+
+data$num_var <- as.numeric(data$num_var)
 
 ## Testing your table of covariates for a study 
   #Create a dataframe of your covariates and a variable splitting your two groups
@@ -138,6 +156,9 @@ anova_fit <- aov(Sepal.Length ~ #this is your outcome
 
 summary(anova_fit)
 
+# In the exmaple above it is a MANCOVA because you have 1 factor, species
+# and one covariate, petal.width
+
 #Chi squared test
   #For this test you need to build the contingency table but R makes it easy
 
@@ -152,18 +173,28 @@ chisq.test(table(data$Species, data$Category))
 fisher.test(table(data$Species, data$Category))
 
 #Regression
+data.log <- ISLR::Default
 
-glm_fit <- glm(Sepal.Length ~ #your outcome
-                 Petal.Width + #Your input variables
-                 Species, #You can even include catagorical variables!
-               data = data, #the name of your dataframe
-               family = gaussian) #This is the type of regression
+glm_fit <- glm(default ~ #your outcome
+                 student + #Your input variables
+                 balance +
+                 income, #You can even include categorical variables!
+               data = data.log, #the name of your dataframe
+               family = binomial) #This is the type of regression, linear
 
 summary(glm_fit)
 
+reg.table <- glm_fit %>%
+  tbl_regression(exponentiate = TRUE)
+
+reg.table |> 
+  as_gt() |> 
+  gt::gtsave(filename = ".") # use extensions .png, .html, .docx, .rtf, .tex, .ltx
+
 ## Changing the type of regression means just changing the family
-# Binomial - 'binomial'
+# Logistic - 'binomial'
 # Possion - 'poisson'
+# Linear - 'gaussian'
 
 ##Survival modeling
 
